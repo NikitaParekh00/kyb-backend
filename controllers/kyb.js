@@ -1,9 +1,6 @@
 import { User } from "../models/userSchema.js";
-import bcryptjs from "bcryptjs";
-import jwt from "jsonwebtoken";
 import PDFDocument from 'pdfkit';
 import path from "path";
-import fs from "fs";
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 
@@ -12,55 +9,60 @@ const __dirname = dirname(__filename);
 
 export const Kyb = async (req, res) => {
     try {
-        const membershipNumber = req.query.membershipNumber;
+        // console.log("Inside KYB function");
 
-        console.log("Getting call in kyb");
+        // Parse membershipNumber
+        const membershipNumber = req.query.membershipNumber?.trim(); // Ensure it's a string
+        // console.log("Membership number received:", membershipNumber);
+
         if (!membershipNumber) {
             return res.status(400).json({ message: "Membership number is required" });
         }
 
-        const user = await User.find();
-        const userData = user[0];
-
-        if (!userData) {
-            return res.status(404).json({ message: "Membership number not found" });
+        // Query the database
+        // console.log("Querying database with:", { MRN: membershipNumber });
+        const user = await User.findOne({ MRN: membershipNumber });
+        if (!user) {
+            // console.error("User not found for MRN:", membershipNumber);
+            return res.status(404).json({ message: "User not found" });
         }
 
-        // Set response headers for file download
-        const fileName = `Polling_Booth_${userData.name.replace(/ /g, "_")}_${membershipNumber}.pdf`;
+        // console.log("User data retrieved:", user);
+
+        // Set response headers for PDF download
+        const fileName = `Polling_Booth_${user.name.replace(/ /g, "_")}_${membershipNumber}.pdf`;
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
 
-        // Create PDF document and pipe it directly to the response
+        // Create the PDF document
         const doc = new PDFDocument();
+
+        // Pipe the PDF data to the response
         doc.pipe(res);
-
-        // Background image
+        console.log("response", res)
+        // Add content to the PDF
         const backgroundImage = path.join(__dirname, '..', 'public', 'img', 'kyb.jpeg');
-        doc.image(backgroundImage, { width: 595, height: 210 });
+        doc.image(backgroundImage, 0, 0, { width: 595, height: 210 });
 
-        // Title
-        doc.fontSize(18).text('Know Your Polling Booth Details', { align: 'center' });
+        doc.fontSize(18).text('Know Your Polling Booth Details', { align: 'center', underline: true });
 
-        // Add details
-        doc.fontSize(12).text(`Voter Serial Number: ${userData.voterSerialNo}`);
-        doc.text(`Membership No.: ${userData.mrn}`);
-        doc.text(`Name: ${userData.name}`);
-        doc.text(`Location: ${userData.location}`);
-        doc.text(`Booth No.: ${userData.boothNo}`);
-        doc.text(`Booth Address: ${userData.address}`);
-        doc.text(`Date: ${userData.date}`);
+        doc.moveDown();
+        doc.fontSize(12).text(`Voter Serial Number: ${user.voterSerialNo}`);
+        doc.text(`Membership No.: ${user.MRN}`);
+        doc.text(`Name: ${user.name}`);
+        doc.text(`Location: ${user.location}`);
+        doc.text(`Booth No.: ${user.boothNo}`);
+        doc.text(`Booth Address: ${user.address}`);
+        doc.text(`Date: ${user.date}`);
 
-        // Footer image
         const footerImage = path.join(__dirname, '..', 'public', 'img', 'kyb3.jpeg');
-        doc.image(footerImage, { width: 595, height: 150, align: 'center' });
+        doc.image(footerImage, 0, 650, { width: 595, height: 150 });
 
-        // Finalize the PDF
+        // Finalize and end the PDF
         doc.end();
-
+        console.log("PDF generation completed");
     } catch (error) {
-        console.error(error);
+        console.error("Error generating PDF:", error);
         res.status(500).json({ message: "Server Error" });
     }
 };
-

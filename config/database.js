@@ -5,7 +5,7 @@ dotenv.config({
 });
 
 const databaseConnection = () => {
-    mongoose.connect(process.env.MONGO_URI).then(() => {
+    mongoose.connect("mongodb+srv://Nikita:Nikita%40123@cluster0.oeofn.mongodb.net/voter_info?retryWrites=true&w=majority&appName=Cluster0").then(() => {
         console.log('Database connected');
     }).catch((error) => {
         console.log('Error connecting to database', error);

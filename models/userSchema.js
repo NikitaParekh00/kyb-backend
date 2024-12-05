@@ -31,7 +31,7 @@ const userSchema = new mongoose.Schema(
       required: true,
     },
     mobile: {
-      type: String,
+      type: Number,
       required: false, // Adjust based on your requirements
     },
   },

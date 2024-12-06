@@ -5,6 +5,11 @@ export const Kyb = async (req, res) => {
     const membershipNumber = req.query.membershipNumber
       ?.replace(/\s+/g, "")
       .trim();
+
+    if (membershipNumber.startsWith("+91")) {
+      membershipNumber = membershipNumber.substring(3); // Remove the '+91'
+    }
+
     if (!membershipNumber) {
       return res.status(400).json({
         success: false,

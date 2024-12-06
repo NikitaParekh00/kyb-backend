@@ -2,7 +2,9 @@ import { User } from "../models/userSchema.js";
 
 export const Kyb = async (req, res) => {
   try {
-    const membershipNumber = req.query.membershipNumber?.trim();
+    const membershipNumber = req.query.membershipNumber
+      ?.replace(/\s+/g, "")
+      .trim();
     if (!membershipNumber) {
       return res.status(400).json({
         success: false,

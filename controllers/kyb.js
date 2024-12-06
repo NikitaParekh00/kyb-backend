@@ -2,13 +2,23 @@ import { User } from "../models/userSchema.js";
 
 export const Kyb = async (req, res) => {
   try {
-    const membershipNumber = req.query.membershipNumber
-      ?.replace(/\s+/g, "")
-      .trim();
+    // const membershipNumber = req.query.membershipNumber
+    //   ?.replace(/\s+/g, "")
+    //   .trim();
 
+    // if (membershipNumber.startsWith("+91")) {
+    //   membershipNumber = membershipNumber.substring(3); // Remove the '+91'
+    // }
+
+    let membershipNumber = req.query.membershipNumber;
+
+    // Remove the '+91' prefix if it exists
     if (membershipNumber.startsWith("+91")) {
       membershipNumber = membershipNumber.substring(3); // Remove the '+91'
     }
+
+    // Now remove all spaces (from anywhere in the string)
+    membershipNumber = membershipNumber.replace(/\s+/g, "").trim();
 
     if (!membershipNumber) {
       return res.status(400).json({
